@@ -18,7 +18,7 @@ This is the infrastructure as code to deploy a Kubernetes cluster on AWS EKS wit
 
 - **System/Workshop Node Separation**: Infrastructure components run on dedicated system nodes
 
-- **DNS Domain**: Uses `work.contrastdemo.com` for all ingress routes
+- **DNS Domain**: Uses `workshop.contrastdemo.com` for all ingress routes
 
 - **Integrated Observability**: OpenSearch, FluentBit, and Falco for monitoring and security- **Cluster EKS Manuel**: Pas de mode auto - contrôle total des groupes de noeudsand Contrast Security Agent Operator. This setup is used for workshops and demos, where each workshop user will have
 
@@ -27,7 +27,7 @@ This is the infrastructure as code to deploy a Kubernetes cluster on AWS EKS wit
 ## Prerequisites-
 
 
-- [AWS CLI](https://aws.amazon.com/cli/)- **DNS Séparé**: Utilise le domaine `work.contrastdemo.com`## Key Featurestheir own namespace and access to an application for testing with Contrast. 
+- [AWS CLI](https://aws.amazon.com/cli/)- **DNS Séparé**: Utilise le domaine `workshop.contrastdemo.com`## Key Featurestheir own namespace and access to an application for testing with Contrast. 
 
 - [eksctl](https://eksctl.io/installation/)
 

@@ -1,4 +1,4 @@
-# Work Infrastructure Kubernetes# Work Infrastructure Kubernetes - Gestion Manuelle des Noeuds# Work Infrastructure Kubernetes - Manual Node Management# Workshop Infra Kubernetes
+# Work Infrastructure Kubernetes - Manual Node Management
 
 
 
@@ -6,9 +6,7 @@ This is the infrastructure as code to deploy a Kubernetes cluster on AWS EKS wit
 
 
 
-## Key FeaturesCeci est une version avec gestion manuelle des noeuds de l'infrastructure workshop, conçue pour fonctionner en parallèle de la configuration `workshop-infra-kubernetes` originale. La différence clé est que ce cluster utilise une gestion manuelle des noeuds avec la capacité d'assigner des noeuds dédiés à des namespaces spécifiques.
-
-
+## Key Features
 
 - **Manual EKS Cluster**: Full control over node groups with manual scaling
 

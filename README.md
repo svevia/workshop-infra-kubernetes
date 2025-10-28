@@ -72,7 +72,7 @@ make configure-dns
 
 
 
-# 5. Deploy all infrastructure components## Étapes de Déploiement Rapide- **Automatic Node Assignment**: Scripts and watchers for automated node assignment- Admin level AWS role configured to login with `aws sso login`
+# 5. Deploy all infrastructure components
 
 make setup-kube
 

@@ -1,0 +1,40 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "EKSNodeGroupManagement",
+      "Effect": "Allow",
+      "Action": [
+        "eks:DescribeNodegroup",
+        "eks:ListNodegroups",
+        "eks:UpdateNodegroupConfig",
+        "eks:DescribeCluster"
+      ],
+      "Resource": [
+        "arn:aws:eks:*:*:cluster/workshop-cluster",
+        "arn:aws:eks:*:*:nodegroup/workshop-cluster/workshop-nodes/*"
+      ]
+    },
+    {
+      "Sid": "EC2NodeManagement",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstances",
+        "ec2:DescribeTags",
+        "ec2:TerminateInstances"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AutoScalingGroupManagement",
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:DescribeAutoScalingGroups",
+        "autoscaling:UpdateAutoScalingGroup",
+        "autoscaling:SetDesiredCapacity",
+        "autoscaling:SetInstanceProtection"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

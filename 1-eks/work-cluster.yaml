@@ -1,0 +1,102 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: workshop-cluster
+  region: eu-west-1
+  version: '1.30'
+  tags:
+    Environment: workshop
+    Type: manual-nodes
+
+# Disable auto mode for manual node management
+autoModeConfig:
+  enabled: false
+
+zonalShiftConfig:
+  enabled: true
+
+# VPC configuration for better network control
+vpc:
+  cidr: 192.168.0.0/16
+  clusterEndpoints:
+    publicAccess: true
+    privateAccess: true
+  publicAccessCIDRs: ["0.0.0.0/0"]
+
+# IAM configuration
+iam:
+  withOIDC: true
+
+# Define multiple node groups for different purposes
+nodeGroups:
+  # System node group for infrastructure components and Kubernetes addons
+  # No taints - allows both critical addons (CoreDNS, EBS CSI, etc.) and our infrastructure stack
+  - name: system-nodes
+    instanceType: m5.large
+    desiredCapacity: 2
+    minSize: 2
+    maxSize: 4
+    volumeSize: 50
+    volumeType: gp3
+    amiFamily: AmazonLinux2
+    iam:
+      withAddonPolicies:
+        imageBuilder: true
+        autoScaler: true
+        certManager: true
+        efs: true
+        ebs: true
+        fsx: true
+        cloudWatch: true
+    labels:
+      node-type: system
+      workload: infrastructure
+    tags:
+      NodeGroupType: system
+      Environment: workshop
+
+  # Workshop node group for deployer and general workloads
+  # Each namespace needs ~3.66 CPU cores and ~4.4Gi RAM
+  # Using c6a.2xlarge (8 vCPU, 16GB RAM, compute-optimized) - 36% cheaper than m5.2xlarge with better CPU performance
+  - name: workshop-nodes
+    instanceType: c6a.2xlarge
+    desiredCapacity: 0
+    minSize: 0
+    maxSize: 50
+    volumeSize: 100
+    volumeType: gp3
+    amiFamily: AmazonLinux2
+    iam:
+      withAddonPolicies:
+        imageBuilder: true
+        autoScaler: true
+        certManager: true
+        efs: true
+        ebs: true
+        fsx: true
+        cloudWatch: true
+    labels:
+      node-type: workshop
+      workload: applications
+    tags:
+      NodeGroupType: workshop
+      Environment: workshop
+
+# Add-ons configuration
+addons:
+  - name: vpc-cni
+    version: latest
+  - name: coredns
+    version: latest
+  - name: kube-proxy
+    version: latest
+  - name: aws-ebs-csi-driver
+    version: latest
+    wellKnownPolicies:
+      ebsCSIController: true
+
+# CloudWatch logging
+cloudWatch:
+  clusterLogging:
+    enableTypes: ["audit", "authenticator", "controllerManager"]
+    logRetentionInDays: 7

@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: opensearch-node
+spec:
+  ports:
+  - port: 9200
+    targetPort: 9200
+    protocol: TCP
+    name: api
+  - port: 9600
+    targetPort: 9600
+    protocol: TCP
+    name: performance
+  selector:
+    app: opensearch-node
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: opensearch-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp3
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opensearch-node
+spec:
+  selector:
+    matchLabels:
+      app: opensearch-node
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: opensearch-node
+    spec:
+      nodeSelector:
+{{- with .Values.opensearch.nodeSelector }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+      tolerations:
+{{- with .Values.opensearch.tolerations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+      - image: opensearchproject/opensearch:latest
+        name: opensearch-node
+        env:
+          # Use secret in real usage
+        - name: cluster.name
+          value: "opensearch-cluster"
+        - name: node.name
+          value: "opensearch-node"
+        - name: discovery.seed_hosts
+          value: "opensearch-node"
+        - name: cluster.initial_cluster_manager_nodes
+          value: "opensearch-node"
+        - name: bootstrap.memory_lock
+          value: "false"
+        - name: OPENSEARCH_JAVA_OPTS
+          value: "-Xms512m -Xmx512m"
+        - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+          value: "Contrast@123!"
+        ports:
+        - containerPort: 9200
+          name: api
+        - containerPort: 9600
+          name: performance
+        volumeMounts:
+        - name: opensearch-data
+          mountPath: /usr/share/opensearch/data
+        resources:
+          requests:
+            memory: "3Gi"
+            cpu: "500m"
+          limits:
+            memory: "8Gi"
+            cpu: "1000m"
+      volumes:
+      - name: opensearch-data
+        persistentVolumeClaim:
+          claimName: opensearch-data-pvc

@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cluster-ingress-opensearch
+  namespace: observability
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: opensearch.{{ .Values.workshopBaseUrl}}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: opensearch-dashboard
+                port:
+                  number: 5601

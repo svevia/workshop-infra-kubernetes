@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: opensearch-dashboard
+spec:
+  selector:
+    app: opensearch-dashboard
+  ports:
+  - port: 5601
+    targetPort: 5601
+    protocol: TCP
+    name: dashboard
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opensearch-dashboard
+spec:
+  selector:
+    matchLabels:
+      app: opensearch-dashboard
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: opensearch-dashboard
+    spec:
+      nodeSelector:
+        {{- toYaml (index .Values "opensearch-dashboard" "nodeSelector") | nindent 8 }}
+      tolerations:
+        {{- toYaml (index .Values "opensearch-dashboard" "tolerations") | nindent 8 }}
+      containers:
+      - image: opensearchproject/opensearch-dashboards:latest
+        name: dashboard
+        env:
+        - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+          value: {{ .Values.opensearch.initialAdminPassword }}
+        ports:
+        - containerPort: 5601
+          name: dashboard
+        volumeMounts:
+        - name: dashboard-config
+          mountPath: /usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
+          subPath: opensearch_dashboards.yml
+          readOnly: true
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+            ephemeral-storage: "1Gi"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+            ephemeral-storage: "2Gi"
+      volumes:
+      - name: dashboard-config
+        configMap:
+          name: opensearch-dashboard-config

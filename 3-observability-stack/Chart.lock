@@ -1,0 +1,9 @@
+dependencies:
+- name: fluent-bit
+  repository: https://fluent.github.io/helm-charts
+  version: 0.53.0
+- name: falco
+  repository: https://falcosecurity.github.io/charts
+  version: 6.3.0
+digest: sha256:b965c9818655c836ab5d80b1f8e145bd9873901a4b18c8fbfbf9b04173e0d0aa
+generated: "2025-10-01T16:04:23.76068+01:00"

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opensearch-dashboard-config
+data:
+  opensearch_dashboards.yml: |
+    server.host: 0.0.0.0
+    opensearch.hosts: ["https://opensearch-node:9200"]
+    opensearch.ssl.verificationMode: none
+    opensearch.username: admin
+    opensearch.password: ${OPENSEARCH_INITIAL_ADMIN_PASSWORD}
+    opensearch_security.multitenancy.enabled: false

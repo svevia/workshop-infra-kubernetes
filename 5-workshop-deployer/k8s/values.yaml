@@ -1,0 +1,66 @@
+namespace:
+  create: true
+  name: setup
+
+image:
+  repository: 771960604435.dkr.ecr.eu-west-1.amazonaws.com/workshop-images/deployer
+  tag: "v2.0"
+  pullPolicy: Always
+  pullSecrets: []
+
+serviceAccount:
+  create: true
+  name: ""
+  # Annotations for IRSA (IAM Roles for Service Accounts)
+  # Set this to enable AWS API access without credentials
+  # Example: eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/WorkshopDeployerRole
+  annotations: {}
+
+rbac:
+  create: true
+
+secret:
+  create: true
+  name: workshop-deployer-secret
+  apiKey: ""
+
+env:
+  workdir: "/cargo-cats"
+  nsPrefix: "demo-"
+  # AWS configuration for node scaling
+  clusterName: "workshop-cluster"
+  awsRegion: "eu-west-1"
+  # Enable automatic node assignment for created namespaces
+  autoNodeAssignment: "true"
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "300m"
+    memory: "256Mi"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+  host: ""
+  path: "/"
+  pathType: "Prefix"
+
+podAnnotations: {}
+podLabels: {}
+
+nodeSelector:
+  node-type: system
+
+affinity: {}

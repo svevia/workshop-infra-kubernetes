@@ -1,0 +1,57 @@
+controller:
+  # Node selector and tolerations to run on system nodes
+  nodeSelector:
+    node-type: system
+  tolerations:
+    - key: node-type
+      value: system
+      effect: NoSchedule
+      operator: Equal
+  
+  service:
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-name: work-ingress
+      service.beta.kubernetes.io/aws-load-balancer-type: external
+      service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+      service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+      service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+      service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: http
+      service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: /healthz
+      service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: 10254
+
+  ingressClass: nginx
+  ingressClassResource:
+    name: nginx  
+    enabled: true
+    default: false
+    controllerValue: "k8s.io/ingress-nginx"
+
+  admissionWebhooks:
+    enabled: true
+    patch:
+      enabled: true
+  rbac:
+    create: true
+
+  config:
+
+    # Activate ModSecurity & CRS
+    enable-modsecurity: "true"
+    enable-owasp-modsecurity-crs: "true"
+    disable-access-log: "true"
+
+    # Socle ModSecurity global (peut être minimal, ou plus strict si tu veux)
+    modsecurity-snippet: |-
+      SecRuleEngine DetectionOnly
+      SecAuditEngine RelevantOnly
+      SecAuditLog /dev/stdout
+      SecAuditLogFormat JSON
+      SecAuditLogType Serial
+      SecAuditLogParts ABIJDEFHZ
+      SecDebugLog /dev/stdout
+      SecDebugLogLevel 3
+      SecArgumentsLimit 100
+      SecRequestBodyAccess On
+      SecRequestBodyJsonDepthLimit 512
+      SecRequestBodyNoFilesLimit 1048576

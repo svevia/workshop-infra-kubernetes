@@ -1,0 +1,23 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: ClusterAgentConfiguration
+metadata:
+  name: default-agent-configuration
+  namespace: contrast-agent-operator
+spec:
+  template:
+    spec:
+      enableYamlVariableReplacement: false
+      suppressDefaultApplicationName: false
+      suppressDefaultServerName: false
+      yaml: |-
+        protect:
+          enable: true
+        assess:
+          enable: true
+        observe:
+          enable: true
+        agent:
+          logger:
+            level: INFO
+
+---

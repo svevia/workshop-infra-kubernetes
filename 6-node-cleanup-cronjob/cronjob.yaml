@@ -1,0 +1,86 @@
+---
+# Note: We reuse the existing workshop-deployer-sa ServiceAccount
+# which already has the IAM role attached with all necessary AWS permissions
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-cleanup-role
+rules:
+  # Permission to list, read, and patch nodes (needed for cordon/drain)
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+  # Permission to drain nodes (delete pods)
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "delete"]
+  - apiGroups: [""]
+    resources: ["pods/eviction"]
+    verbs: ["create"]
+  # Permission to list namespaces
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
+  # Permission to check daemonsets during drain
+  - apiGroups: ["apps"]
+    resources: ["daemonsets"]
+    verbs: ["get", "list"]
+  # Permission to check statefulsets and replicasets during drain
+  - apiGroups: ["apps"]
+    resources: ["statefulsets", "replicasets"]
+    verbs: ["get", "list"]
+  # Permission to check deployments during drain
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: node-cleanup-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: node-cleanup-role
+subjects:
+  - kind: ServiceAccount
+    name: workshop-deployer-sa  # Reuse existing ServiceAccount with IAM role
+    namespace: setup
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: node-cleanup-cronjob
+  namespace: setup
+spec:
+  # Run every 10 minutes
+  schedule: "*/10 * * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid  # Don't run multiple instances concurrently
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300  # Clean up completed jobs after 5 minutes
+      template:
+        metadata:
+          labels:
+            app: node-cleanup
+        spec:
+          serviceAccountName: workshop-deployer-sa  # Reuse existing ServiceAccount
+          restartPolicy: OnFailure
+          containers:
+            - name: cleanup
+              image: 771960604435.dkr.ecr.eu-west-1.amazonaws.com/workshop-images/node-cleanup:latest
+              imagePullPolicy: Always
+              env:
+                - name: AWS_REGION
+                  value: "eu-west-1"  # Update with your region
+              # AWS credentials from IRSA (IAM Roles for Service Accounts)
+              # Make sure the service account has the IAM role attached with permissions for:
+              # - autoscaling:DescribeAutoScalingGroups
+              # - autoscaling:SetInstanceProtection
+              # - autoscaling:SetDesiredCapacity
+              # - ec2:TerminateInstances
+          nodeSelector:
+            node-type: system  # Run on system nodes, not workshop nodes

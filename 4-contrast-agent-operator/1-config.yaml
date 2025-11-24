@@ -6,7 +6,7 @@ metadata:
 spec:
   template:
     spec:
-      enableYamlVariableReplacement: false
+      enableYamlVariableReplacement: true
       suppressDefaultApplicationName: false
       suppressDefaultServerName: false
       yaml: |-
@@ -19,5 +19,7 @@ spec:
         agent:
           logger:
             level: INFO
+        application:
+          session_metadata: namespace=%namespace%,injector=%annotations.agents.contrastsecurity.com/injector-type%
 
 ---
